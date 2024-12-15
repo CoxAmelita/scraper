@@ -1,0 +1,26 @@
+
+**Code** (`src/main.rs`):
+```rust
+use reqwest;
+use scraper::{Html, Selector};
+use std::error::Error;
+
+async fn fetch_data(url: &str) -> Result<(), Box<dyn Error>> {
+    let body = reqwest::get(url).await?.text().await?;
+    let document = Html::parse_document(&body);
+    let selector = Selector::parse("h2.article-title").unwrap();
+
+    for element in document.select(&selector) {
+        println!("{}", element.text().collect::<Vec<_>>().join(" "));
+    }
+
+    Ok(())
+}
+
+#[tokio::main]
+async fn main() {
+    let url = "https://example.com/articles";
+    if let Err(e) = fetch_data(url).await {
+        eprintln!("Error fetching data: {}", e);
+    }
+}
